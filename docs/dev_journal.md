@@ -1,312 +1,179 @@
-# Veritas Ledger – Dev Journal
-
-*Veritas = “truth” in Latin. Not claiming truth, just preserving what existed.*
+# Veritas Ledger – Dev Journal  
 
 ---
 
-## 1. What am I even building?
+## 21 March 2026
 
-At a high level, this is about recording digital evidence of real-world events in a way that:
+### What am I even building?
 
-* can’t be altered later
-* proves it existed at a certain time
-* doesn’t rely on a central authority
+I thought I was building some big “truth system”.
 
-### The Mission
+For now, let's simplify:
 
-I am not proving *truth*.
-I am proving **data integrity**.
-
-> “This data existed at this time and hasn’t been changed by a single bit since.”
+> a way to prove a file existed at a certain time and hasn’t been changed since.
 
 ---
 
-## 2. The Problem
+### The core idea (finally clear)
 
-Current evidence systems (social media, private databases) are fragile.
+Someone has a file (image, video, doc, whatever).
 
-* content can be deleted
-* timelines can be manipulated
-* access is controlled by centralized entities
+They upload it.
 
-When the same entity that stores the data also controls it, trust becomes conditional.
+System does:
 
----
+* hash the file  
+* store hash + timestamp + maybe zone (by user)  
 
-## 3. The Solution: Multi-Layer Trust
+Returns:
 
-The idea is simple:
+* some ID (maybe like a "veritas ledger certified)  
 
-> the moment something happens, its existence is anchored to an immutable system
+Later:
 
-Instead of trusting platforms, we rely on:
+* file is uploaded again with ID  
+* hash is recomputed  
+* compared  
 
-* cryptographic hashing
-* decentralized storage
-* public verification
+If same → unchanged  
+If different → tampered  
 
----
-
-### The Unique Angle: Multi-Witness Corroboration
-
-A single upload proves very little.
-
-But:
-
-> if multiple independent users (wallets) submit different evidence for the same event within the same time window and region, confidence increases significantly
-
-The system does not verify truth.
-
-It reveals patterns that are hard to fake at scale.
+Simple. Clean. Enough.
 
 ---
 
-## 4. Technical Architecture (Dual-Layer)
+### Maybe at some version I can try this
 
-To balance usability and immutability, the system is split:
+The interesting part is this scenario:
 
-### Public Face (MongoDB)
+Multiple independent people witness something.
 
-* searchable
-* curated
-* fast
+They all:
 
-Only approved / safe content is shown here.
+* capture evidence  
+* hash it  
+* anchor it around the same time  
 
----
+Later:
 
-### Root of Truth (Blockchain + IPFS)
+* these independent proofs exist  
 
-* immutable
-* uncensored
-* permanent
-
-Every submission exists here, regardless of visibility in the public UI.
-
-Even if the public layer is censored, the underlying data remains accessible.
+Individually weak.  
+Together harder to fake.
 
 ---
 
-## 5. Privacy & Safety (Zero-Footprint Approach)
+### Where I almost overengineered everything
 
-The system avoids collecting sensitive data by design.
+At some point I had:
 
-### Pseudonymous Identity
+* blockchain  
+* IPFS  
+* MongoDB  
+* event system  
+* clustering  
+* metadata handling  
+* privacy layers  
 
-* users interact via wallet addresses
-* no emails, names, or accounts required
+All at once.
 
----
+Which is… a lot for something that doesn’t even have a working v1 yet.
 
-### Metadata Scrubbing
+So current stance:
 
-* EXIF data (device info, exact GPS, etc.) is removed before storage
-* prevents traceability through file metadata
-
----
-
-### Fuzzy Location (Zone-Based)
-
-* precise GPS is NOT stored
-* location is converted into a coarse “Zone ID”
-
-This allows:
-
-* event clustering
-* without exposing exact user location
+> if it doesn’t help hash → store → verify, it’s not v1
 
 ---
 
-### K-Anonymity
+### Current v1 plan
 
-Users are indistinguishable within a group (zone), reducing risk of identification.
+Flow:
 
----
+1. user uploads file  
+2. backend:  
+   * hash file  
+   * optionally scrub metadata  
+3. store:  
+   * hash  
+   * timestamp  
+   * zone (if provided)  
+4. return ID  
 
-## 6. Storage Decisions
+Verification:
 
-### On-Chain (Blockchain)
+1. upload file + ID  
+2. hash again  
+3. compare with stored hash  
 
-* IPFS CID (hash)
-* timestamp
-* wallet address
-* zone ID
+Done.
 
----
-
-### Off-Chain (IPFS)
-
-* actual media files
-
-Decentralized storage ensures:
-
-* no single point of deletion
-* persistence beyond the platform
+No drama.
 
 ---
 
-### Index Layer (MongoDB)
+### Storage decisions (still thinking but keeping it sane)
 
-* event names
-* tags
-* approval status
-* search functionality
+* Blockchain → for timestamp + immutability  
+* IPFS → for file storage (optional but useful for later plans)  
+* DB → only if needed for lookup / UX  
 
----
+Important:
 
-## 7. Tech Stack
+> My system is not storage.
 
-* Solidity → smart contracts
-* Ganache → local blockchain (development)
-* IPFS (Pinata / Infura) → storage
-* Express → backend
-* MongoDB → indexing
-* React → frontend
+It just anchors references.
 
 ---
 
-## 8. Logic Breakdown
+### “Real-time” idea (the fun part)
 
-### Evidence Structure
+I wanted:
 
-```solidity
-struct Evidence {
-    string ipfsHash;      // content identifier
-    address submitter;    // wallet address
-    uint256 timestamp;
-    string zoneId;        // coarse location
-}
+* live recording / capture evidence  
+* continuous hashing  
+* direct blockchain anchoring  
 
-mapping(uint256 => Evidence[]) public eventEvidence;
-```
+so that someone can claim "It is created at that moment of time so it is not tampered", if thats even possible (further research required)
 
-Each event aggregates multiple independent submissions.
+This is what a "real-time certificate claims"
+
+"upload certificate" from v1, can be used to say, "After that point of time, this evidence hasnt been tampered. Its still the same file."
 
 ---
 
-## 9. Key Challenges & Scope
+### What do I mean by certificate?
 
-### What this system does NOT do:
+Gotta work on this more but something like:
 
-* verify truth
-* validate authenticity
-* prevent misinformation
+"id" saying this file is created at this point in time with this data.  
 
----
-
-### Known risks:
-
-* spam submissions
-* misleading or staged content
-* wallet traceability outside system
-* IP-level tracking (outside current scope)
+Later that id and that 'file' are used to verify in veritas.
 
 ---
 
-### Practical limitations:
+### Threat model (forced myself to think about this)
 
-* blockchain ≠ legal admissibility
-* anonymity ≠ guaranteed safety
+Protects against:
 
----
+* file tampering after upload  
+* timeline manipulation  
 
-## 10. Summary: What makes this different?
+Does NOT protect against:
 
-Existing systems:
+* staged events  
+* coordinated fake uploads  
+* pre-edited content  
 
-* secure evidence after collection
+So basically:
 
-Veritas Ledger:
-
-> captures the existence of evidence at the moment it is created
-
-It enables:
-
-* real-time logging
-* decentralized participation
-* tamper-proof verification
+> integrity yes, authenticity no
 
 ---
 
-## 11. Competitive Landscape: Why Veritas?
+### Current focus
 
-There are already systems working on blockchain-based evidence management, but they are built for very different environments.
+Build the smallest working version.
 
-### A. Institutional Systems (e.g., B-DEMS)
+Just:
 
-**What they are:**
-Private, permissioned systems used by law enforcement.
-
-**Limitation:**
-Access is restricted. Evidence only enters the system *after* authorities are involved.
-
-**Veritas Difference:**
-Veritas is **public-first**.
-It allows evidence to be recorded *before* institutions step in.
-
----
-
-### B. IoT Forensic Systems
-
-**What they are:**
-Systems that collect data automatically from devices like CCTV, drones, or sensors.
-
-**Limitation:**
-They depend on infrastructure owned by organizations that may control or restrict access.
-
-**Veritas Difference:**
-Veritas is **user-driven**.
-It relies on personal devices, not institutional hardware.
-
----
-
-### C. Enterprise Evidence Platforms (e.g., Axon, Cellebrite)
-
-**What they are:**
-Centralized cloud platforms used by law enforcement agencies.
-
-**Limitation:**
-
-* controlled by a single entity
-* subject to legal and administrative influence
-* expensive and not publicly accessible
-
-**Veritas Difference:**
-Veritas is **decentralized and publicly verifiable**.
-Once data is anchored, it cannot be selectively removed by any single authority.
-
----
-
-## 12. Why Public Chain (Ganache → Testnet)
-
-I explored permissioned systems like Hyperledger Fabric.
-
-However, for this use case:
-
-* requiring permission defeats the goal of open participation
-* centralized control weakens immutability guarantees
-
-For the prototype:
-
-> Ganache is used for local development
-
-For real deployment:
-
-> a public testnet or network is more aligned with the system’s goals
-
-Key reasons:
-
-* **permissionless entry** → anyone can contribute
-* **independent verification** → no reliance on the platform
-* **stronger immutability guarantees**
-
----
-
-## Final Position
-
-This system does not replace institutions.
-
-It provides something they currently lack:
-
-> a public, tamper-resistant record of evidence at the moment it is created
-
+> hash → store → verify
