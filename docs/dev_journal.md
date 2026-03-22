@@ -170,10 +170,24 @@ So basically:
 
 ---
 
-### Current focus
+## 22 March 2026
 
-Build the smallest working version.
+### Timestamp & Location Integrity Problem
 
-Just:
+timestamp integrity problem and live location problem:
 
-> hash → store → verify
+what if someone changes their phone default time or location settings, or turns on a VPN?
+
+they can fake proof.
+
+---
+
+### What is Separation of Concerns
+
+Separation of concerns means dividing the system so each part handles a distinct responsibility and can change independently. Instead of splitting by actions, it focuses on what logically belongs together and what evolves separately.
+
+---
+
+### How it is applied here
+
+The system is centered around one core concern: evidence (create + verify). Upload and realtime are not separate domains, but different input methods for the same concern. So they are treated as adapters, while the core logic (hashing, anchoring, verification) remains shared and stable. Routes handle API, services handle logic, core handles hashing, and blockchain is isolated as an external dependency.
