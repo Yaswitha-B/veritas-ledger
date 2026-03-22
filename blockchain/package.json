@@ -1,16 +1,13 @@
 {
-  "name": "blockchain",
+  "name": "veritas-blockchain",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Veritas Ledger smart contracts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "truffle compile",
+    "migrate": "truffle migrate --reset",
+    "console": "truffle console"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@truffle/hdwallet-provider": "^2.1.15",
     "truffle": "^5.11.5"
   }
 }

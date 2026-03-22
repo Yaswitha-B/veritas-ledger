@@ -203,3 +203,88 @@ file → hash → generate certificateId → store(id → hash + blockTimestamp 
 Verify:
 
 file → hash → fetch(id → storedHash + blockTimestamp + claimedTime + name + description) → compare
+
+---
+
+### Architecture Decision: Identity, Hashing, and Blockchain Interaction
+
+Key problem: deciding how to integrate identity (MetaMask), integrity (hashing), and storage (blockchain) without overcomplicating the system or losing scalability.
+
+---
+
+### Core Responsibilities
+
+Each layer has a distinct role:
+
+- Backend → computation (hashing, validation, future real-time processing)
+- MetaMask → identity (user approval via signature / transaction)
+- Blockchain → permanence (immutable storage)
+
+---
+
+### Design Options Considered
+
+#### 1. Full Web3 (Client Only)
+
+Client → hash → MetaMask signs → MetaMask sends tx → blockchain
+
+- Pros:
+  - pure decentralization
+  - user-owned data and identity
+  - direct transaction visibility
+
+- Cons:
+  - browser-side hashing limitations (large files)
+  - difficult to extend (real-time, streaming)
+  - weak control layer
+  - UX friction
+
+---
+
+#### 2. Backend-Controlled (No MetaMask)
+
+Client → backend → blockchain
+
+- Pros:
+  - simple implementation
+  - smooth UX
+
+- Cons:
+  - no real user identity
+  - centralized control
+  - backend pays gas (not scalable)
+
+---
+
+#### 3. Hybrid (Chosen Approach)
+
+Client → Backend → hash →
+Client → MetaMask signs →
+Client → MetaMask sends tx  
+
+- Backend is used only for computation (hashing)
+- MetaMask handles identity and transaction signing
+- Blockchain stores final record
+
+---
+
+### Gas Consideration
+
+Gas = fee required to execute transactions on blockchain.
+
+- Test environments (Ganache, Sepolia): free or negligible
+- Real networks: variable cost depending on network load
+
+Who pays:
+- If MetaMask sends transaction → user pays gas
+- If backend sends transaction → server pays gas (not scalable)
+
+Decision:
+→ user pays gas (aligned with decentralized systems)
+
+---
+
+### What to change?
+
+Since the complexity is transfered from backend to client side (metamask and transaction), Backend complexity can be reduced as its only functionality at the moment in v1 is hashing. Hence the folder structure is changed to something simpler. 
+
