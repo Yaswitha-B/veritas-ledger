@@ -1,16 +1,17 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import UploadPage from "./pages/UploadPage";
-import VerifyPage from "./pages/VerifyPage";
-import "./styles/global.css";
+import Upload from "./pages/Upload";
+import Verify from "./pages/Verify";
+import Realtime from "./pages/Realtime";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
-        <Route path="/" element={<UploadPage />} />
-        <Route path="/verify" element={<VerifyPage />} />
+        <Route path="/"         element={<Upload />}   />
+        <Route path="/verify"   element={<Verify />}   />
+        <Route path="/realtime" element={<Realtime />} />
       </Routes>
     </BrowserRouter>
   );

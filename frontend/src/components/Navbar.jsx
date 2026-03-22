@@ -1,20 +1,31 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+const LINKS = [
+  { to: "/",         label: "Certify" },
+  { to: "/verify",   label: "Verify"  },
+  { to: "/realtime", label: "Live Capture" },
+];
 
 export default function Navbar() {
-  return (
-    <div style={{
-      display: "flex",
-      justifyContent: "space-between",
-      padding: "16px 32px",
-      background: "white",
-      borderBottom: "1px solid #eee"
-    }}>
-      <h3 style={{ margin: 0, color: "#4285F4" }}>Veritas</h3>
+  const { pathname } = useLocation();
 
-      <div>
-        <Link to="/" style={{ marginRight: 20 }}>Upload</Link>
-        <Link to="/verify">Verify</Link>
+  return (
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <span className="brand-icon">◈</span>
+        <span className="brand-name">Veritas Ledger</span>
       </div>
-    </div>
+      <div className="navbar-links">
+        {LINKS.map(({ to, label }) => (
+          <Link
+            key={to}
+            to={to}
+            className={`nav-link ${pathname === to ? "active" : ""}`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+    </nav>
   );
 }
