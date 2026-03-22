@@ -1,13 +1,10 @@
 const { hashFile } = require("../core/hasher");
 const { createEvidence } = require("./evidenceService");
 
-// handles file → hash → evidence
-async function handleUpload(fileBuffer) {
+async function handleUpload(fileBuffer, claimedTime, name, description) {
   const hash = hashFile(fileBuffer);
 
-  return await createEvidence(hash);
+  return await createEvidence(hash, claimedTime, name, description);
 }
 
-module.exports = {
-  handleUpload
-};
+module.exports = { handleUpload };

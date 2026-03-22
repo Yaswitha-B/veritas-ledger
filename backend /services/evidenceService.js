@@ -1,24 +1,36 @@
-const {
-  anchorProof: anchorOnChain,
-  verifyProof: verifyOnChain
-} = require("../blockchain/proofProvider");
+const crypto = require("crypto");
+const { storeRecord, getRecord } = require("../blockchain/proofProvider");
 
-// anchor evidence
-async function createEvidence(hash) {
-  await anchorOnChain(hash);
+function generateId(hash) {
+  return crypto
+    .createHash("sha256")
+    .update(hash + Date.now())
+    .digest("hex");
+}
+
+async function createEvidence(hash, claimedTime, name, description) {
+  const id = generateId(hash);
+
+  await storeRecord(id, hash, claimedTime, name, description);
 
   return {
-    evidenceId: hash
+    certificateId: id,
+    fileHash: hash
   };
 }
 
-// verify evidence
-async function verifyEvidence(hash) {
-  const exists = await verifyOnChain(hash);
+async function verifyEvidence(id, hash) {
+  const record = await getRecord(id);
+
+  const isValid = record.fileHash === hash;
 
   return {
-    evidenceId: hash,
-    exists
+    certificateId: id,
+    isValid,
+    blockTimestamp: record.blockTimestamp,
+    claimedTime: record.claimedTime,
+    name: record.name,
+    description: record.description
   };
 }
 

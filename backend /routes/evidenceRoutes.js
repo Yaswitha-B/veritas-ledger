@@ -8,21 +8,29 @@ const { hashFile } = require("../core/hasher");
 const router = express.Router();
 const upload = multer();
 
-// upload → create evidence
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const result = await handleUpload(req.file.buffer);
+    const { name, description, claimedTime } = req.body;
+
+    const result = await handleUpload(
+      req.file.buffer,
+      claimedTime,
+      name,
+      description
+    );
+
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// verify → check evidence
 router.post("/verify", upload.single("file"), async (req, res) => {
   try {
+    const { certificateId } = req.body;
     const hash = hashFile(req.file.buffer);
-    const result = await verifyEvidence(hash);
+
+    const result = await verifyEvidence(certificateId, hash);
 
     res.json(result);
   } catch (err) {

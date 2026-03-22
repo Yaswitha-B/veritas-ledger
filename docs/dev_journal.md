@@ -191,3 +191,15 @@ Separation of concerns means dividing the system so each part handles a distinct
 ### How it is applied here
 
 The system is centered around one core concern: evidence (create + verify). Upload and realtime are not separate domains, but different input methods for the same concern. So they are treated as adapters, while the core logic (hashing, anchoring, verification) remains shared and stable. Routes handle API, services handle logic, core handles hashing, and blockchain is isolated as an external dependency.
+
+---
+
+### Flow
+
+Upload:
+
+file → hash → generate certificateId → store(id → hash + blockTimestamp + claimedTime + name + description)
+
+Verify:
+
+file → hash → fetch(id → storedHash + blockTimestamp + claimedTime + name + description) → compare

@@ -1,29 +1,28 @@
 require("dotenv").config();
-
 const { ethers } = require("ethers");
 
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
 const signer = provider.getSigner(0);
 
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
+const contract = new ethers.Contract(
+  process.env.CONTRACT_ADDRESS,
+  [
+    "function store(string id, string fileHash, string claimedTime, string name, string description)",
+    "function get(string id) view returns (string, uint256, string, string, string)"
+  ],
+  signer
+);
 
-const ABI = [
-  "function store(string memory _hash) public",
-  "function verify(string memory _hash) public view returns (bool)"
-];
-
-const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-
-async function anchorProof(hash) {
-  const tx = await contract.store(hash);
+async function storeRecord(id, hash, claimedTime, name, description) {
+  const tx = await contract.store(id, hash, claimedTime, name, description);
   await tx.wait();
 }
 
-async function verifyProof(hash) {
-  return await contract.verify(hash);
+async function getRecord(id) {
+  const [fileHash, blockTimestamp, claimedTime, name, description] =
+    await contract.get(id);
+
+  return { fileHash, blockTimestamp, claimedTime, name, description };
 }
 
-module.exports = {
-  anchorProof,
-  verifyProof
-};
+module.exports = { storeRecord, getRecord };
